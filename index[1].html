@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CHARIS TAIWAN｜肌膚診斷</title>
+  <meta name="description" content="RENE CELL 潤妮秀 - 找到最適合你的保養系列" />
+
+  <!-- LINE LIFF SDK（需填入你的 LIFF ID） -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink: #B4729A;
+      --pink-dark: #9A5C82;
+      --pink-light: #FBEAF0;
+      --text-primary: #1a1a1a;
+      --text-secondary: #555;
+      --text-muted: #888;
+      --surface-0: #f5f3f0;
+      --surface-1: #efefec;
+      --surface-2: #fff;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.18);
+      --radius: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans TC', 'PingFang TC', sans-serif;
+      background: var(--surface-0);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface-2);
+      min-height: 100vh;
+      padding: 1.5rem 1.25rem 2rem;
+      position: relative;
+    }
+
+    /* ── Header ── */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .brand-logo-img {
+      height: 36px;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+    .brand-logo {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .brand-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+    .brand-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ── Progress ── */
+    .progress-wrap {
+      margin-bottom: 1.5rem;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      background: var(--surface-1);
+      border-radius: 99px;
+      height: 5px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink-dark), var(--pink));
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Steps ── */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .question {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+
+    .options { display: grid; gap: 9px; }
+
+    .option-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .option-btn:active { transform: scale(0.98); }
+    .option-btn.selected {
+      border-color: var(--pink);
+      background: var(--pink-light);
+    }
+    .option-icon { font-size: 22px; width: 30px; text-align: center; flex-shrink: 0; }
+    .option-text { font-size: 15px; color: var(--text-primary); font-weight: 500; }
+    .option-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+
+    /* ── Nav ── */
+    .nav-row { display: flex; gap: 8px; margin-top: 1.25rem; }
+    .btn-back {
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 11px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .btn-next {
+      flex: 1;
+      background: var(--pink);
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      opacity: 0.35;
+      transition: opacity 0.2s, background 0.15s;
+    }
+    .btn-next.ready { opacity: 1; }
+    .btn-next.ready:active { background: var(--pink-dark); transform: scale(0.98); }
+
+    /* ── Result ── */
+    .result { display: none; }
+    .result.active { display: block; }
+
+    .result-hero {
+      text-align: center;
+      padding: 1rem 0 1.5rem;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+    .result-emoji { font-size: 48px; margin-bottom: 8px; }
+    .result-badge {
+      display: inline-block;
+      background: var(--pink-light);
+      color: var(--pink-dark);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .result-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .result-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 1.25rem 0 0.75rem;
+    }
+
+    .products-list { display: flex; flex-direction: column; gap: 8px; }
+    .product-card {
+      background: var(--surface-1);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .product-num {
+      width: 26px;
+      height: 26px;
+      background: var(--pink);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .product-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .product-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    .tips-box {
+      background: var(--pink-light);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      margin-top: 0.75rem;
+    }
+    .tips-title { font-size: 13px; font-weight: 600; color: var(--pink-dark); margin-bottom: 8px; }
+    .tips-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .tips-list li {
+      font-size: 13px;
+      color: #7a4a6a;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      line-height: 1.5;
+    }
+    .tips-list li::before { content: '✦'; font-size: 9px; margin-top: 4px; flex-shrink: 0; }
+
+    .cta-area { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 8px; }
+    .btn-visit {
+      width: 100%;
+      background: var(--pink);
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+      letter-spacing: 0.5px;
+    }
+    .btn-visit:active { background: var(--pink-dark); transform: scale(0.98); }
+    .btn-line {
+      width: 100%;
+      background: #06C755;
+      border: none;
+      border-radius: var(--radius);
+      padding: 13px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-line:active { background: #05a848; transform: scale(0.98); }
+    .btn-restart {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 11px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    /* ── Intro screen ── */
+    .intro { text-align: center; padding: 1rem 0; }
+    .intro-icon { font-size: 56px; margin-bottom: 1rem; }
+    .intro-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .intro-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1.5rem; }
+    .intro-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 1.75rem; }
+    .intro-tag {
+      background: var(--pink-light);
+      color: var(--pink-dark);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 99px;
+    }
+    .btn-start {
+      width: 100%;
+      background: var(--pink);
+      border: none;
+      border-radius: var(--radius);
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 1px;
+    }
+    .btn-start:active { background: var(--pink-dark); }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Brand Header -->
+  <div class="brand-header">
+    <div class="brand-logo">RENE CELL 潤妮秀 × CHARIS TAIWAN</div>
+    <div class="brand-title">肌膚專屬診斷</div>
+    <div class="brand-sub">5個問題，找出最適合你的保養系列</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progress-wrap" style="display:none">
+    <div class="progress-meta">
+      <span id="step-label">問題 1 / 5</span>
+      <span id="step-pct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Intro -->
+  <div class="intro" id="intro-screen">
+    <div class="intro-icon">🌸</div>
+    <div class="intro-title">你的肌膚需要什麼？</div>
+    <div class="intro-desc">
+      只要花 1 分鐘，我們就能推薦最適合你的韓國頂級保養系列 RENE CELL 潤妮秀，讓保養事半功倍。
+    </div>
+    <div class="intro-tags">
+      <span class="intro-tag">✨ 抗老緊緻</span>
+      <span class="intro-tag">💧 深層保濕</span>
+      <span class="intro-tag">🌟 美白亮膚</span>
+      <span class="intro-tag">🛡️ 修護舒緩</span>
+      <span class="intro-tag">🎭 面膜密集</span>
+    </div>
+    <button class="btn-start" id="start-btn">開始診斷 →</button>
+  </div>
+
+  <!-- Quiz Area -->
+  <div id="quiz-area" style="display:none">
+
+    <!-- Q1 -->
+    <div class="step" data-step="0">
+      <div class="question">你的肌膚類型是？</div>
+      <div class="options">
+        <button class="option-btn" data-val="dry">
+          <span class="option-icon">🌵</span>
+          <div><div class="option-text">乾性肌膚</div><div class="option-sub">容易緊繃、脫皮，需要大量補水</div></div>
+        </button>
+        <button class="option-btn" data-val="oily">
+          <span class="option-icon">✨</span>
+          <div><div class="option-text">油性肌膚</div><div class="option-sub">T字出油，毛孔較明顯</div></div>
+        </button>
+        <button class="option-btn" data-val="combo">
+          <span class="option-icon">⚖️</span>
+          <div><div class="option-text">混合性肌膚</div><div class="option-sub">T字偏油，兩頰偏乾</div></div>
+        </button>
+        <button class="option-btn" data-val="sensitive">
+          <span class="option-icon">🌸</span>
+          <div><div class="option-text">敏感性肌膚</div><div class="option-sub">容易泛紅、不適、對成分敏感</div></div>
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn-next" id="next-0">繼續 →</button>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="step" data-step="1">
+      <div class="question">你最在意的肌膚問題是？</div>
+      <div class="options">
+        <button class="option-btn" data-val="aging">
+          <span class="option-icon">⏳</span>
+          <div><div class="option-text">抗老緊緻</div><div class="option-sub">細紋、鬆弛，希望維持年輕狀態</div></div>
+        </button>
+        <button class="option-btn" data-val="whitening">
+          <span class="option-icon">🌟</span>
+          <div><div class="option-text">美白淡斑</div><div class="option-sub">暗沉、色斑，希望提亮膚色</div></div>
+        </button>
+        <button class="option-btn" data-val="hydration">
+          <span class="option-icon">💧</span>
+          <div><div class="option-text">深層保濕</div><div class="option-sub">乾燥缺水，希望水潤光澤</div></div>
+        </button>
+        <button class="option-btn" data-val="repair">
+          <span class="option-icon">🛡️</span>
+          <div><div class="option-text">修護舒緩</div><div class="option-sub">敏感泛紅、屏障受損、術後修復</div></div>
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" data-to="0">← 返回</button>
+        <button class="btn-next" id="next-1">繼續 →</button>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="step" data-step="2">
+      <div class="question">你的年齡層是？</div>
+      <div class="options">
+        <button class="option-btn" data-val="20s">
+          <span class="option-icon">🌱</span>
+          <div><div class="option-text">20 – 29 歲</div><div class="option-sub">基礎保養，預防勝於治療</div></div>
+        </button>
+        <button class="option-btn" data-val="30s">
+          <span class="option-icon">🌿</span>
+          <div><div class="option-text">30 – 39 歲</div><div class="option-sub">開始在意細紋、光澤感</div></div>
+        </button>
+        <button class="option-btn" data-val="40s">
+          <span class="option-icon">🌳</span>
+          <div><div class="option-text">40 – 49 歲</div><div class="option-sub">注重抗老、緊緻、深層滋養</div></div>
+        </button>
+        <button class="option-btn" data-val="50plus">
+          <span class="option-icon">💎</span>
+          <div><div class="option-text">50 歲以上</div><div class="option-sub">需要高效修護與奢華滋養</div></div>
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" data-to="1">← 返回</button>
+        <button class="btn-next" id="next-2">繼續 →</button>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="step" data-step="3">
+      <div class="question">你的保養習慣是？</div>
+      <div class="options">
+        <button class="option-btn" data-val="simple">
+          <span class="option-icon">⚡</span>
+          <div><div class="option-text">簡單快速</div><div class="option-sub">3步驟以內，俐落完成</div></div>
+        </button>
+        <button class="option-btn" data-val="layered">
+          <span class="option-icon">📚</span>
+          <div><div class="option-text">多步驟分層</div><div class="option-sub">享受保養儀式，願意多花時間</div></div>
+        </button>
+        <button class="option-btn" data-val="mask">
+          <span class="option-icon">🎭</span>
+          <div><div class="option-text">喜愛面膜</div><div class="option-sub">定期使用面膜做密集護理</div></div>
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" data-to="2">← 返回</button>
+        <button class="btn-next" id="next-3">繼續 →</button>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="step" data-step="4">
+      <div class="question">你對成分的偏好是？</div>
+      <div class="options">
+        <button class="option-btn" data-val="natural">
+          <span class="option-icon">🌿</span>
+          <div><div class="option-text">天然植物萃取</div><div class="option-sub">偏好天然溫和的植物性成分</div></div>
+        </button>
+        <button class="option-btn" data-val="biotech">
+          <span class="option-icon">🔬</span>
+          <div><div class="option-text">高科技生物活性</div><div class="option-sub">胜肽、幹細胞等科技成分</div></div>
+        </button>
+        <button class="option-btn" data-val="vitaminc">
+          <span class="option-icon">🍊</span>
+          <div><div class="option-text">維他命C亮白</div><div class="option-sub">注重提亮、抗氧化功效</div></div>
+        </button>
+        <button class="option-btn" data-val="nocare">
+          <span class="option-icon">🤷</span>
+          <div><div class="option-text">不特別在意</div><div class="option-sub">只要有效就好</div></div>
+        </button>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" data-to="3">← 返回</button>
+        <button class="btn-next ready" id="next-4">查看我的結果 ✦</button>
+      </div>
+    </div>
+
+  </div><!-- /quiz-area -->
+
+  <!-- Result -->
+  <div class="result" id="result-area">
+    <div class="result-hero">
+      <div class="result-emoji" id="r-emoji"></div>
+      <div class="result-badge" id="r-badge"></div>
+      <div class="result-title" id="r-title"></div>
+      <div class="result-desc" id="r-desc"></div>
+    </div>
+
+    <div class="section-label">推薦產品</div>
+    <div class="products-list" id="r-products"></div>
+
+    <div class="section-label">保養叮嚀</div>
+    <div class="tips-box">
+      <div class="tips-title">✦ 專為你的膚質建議</div>
+      <ul class="tips-list" id="r-tips"></ul>
+    </div>
+
+    <div class="cta-area">
+      <a class="btn-visit" href="https://charis-global.tw/" target="_blank">前往 CHARIS TAIWAN 官網選購 →</a>
+      <button class="btn-line" id="share-line-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        分享結果給朋友
+      </button>
+      <button class="btn-restart" id="restart-btn">重新診斷</button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── 資料 ──────────────────────────────────────────
+const RESULTS = {
+  premium: {
+    emoji: '🏆',
+    badge: '高端頂級系列',
+    title: '你適合 — RENE CELL 高端系列',
+    desc: '你的肌膚需要高效能的頂級保養！我們推薦採用胜肽與植物幹細胞科技的「高端系列（Premium Line）」，針對熟齡肌膚提供密集修護，讓肌膚重拾年輕彈力與光澤。',
+    products: [
+      { name: 'Hicro-Q 超頂級安瓶精華', desc: '高濃度胜肽活膚，重返年輕彈力' },
+      { name: '胜肽精華霜', desc: '深層修護，緊緻輪廓線條' },
+      { name: '胜肽化妝水', desc: '第一步高效保濕，為後續保養打底' }
+    ],
+    tips: ['早晚各一次，化妝水 → 精華 → 霜的順序使用', '胜肽怕高溫，避免在浴室高溫環境存放', '建議持續使用 4 週以上，效果更顯著']
+  },
+  basic: {
+    emoji: '💧',
+    badge: '基礎護理系列',
+    title: '你適合 — 基礎護理全程系列',
+    desc: '你的肌膚需要穩定且全面的日常保養。潤妮秀「基礎護理系列」提供從化妝水、精華到乳霜的完整程序，溫和高效，是最適合每天使用的保養方案。',
+    products: [
+      { name: '多肽化妝水', desc: '水潤保濕，輕拍滲透效果佳' },
+      { name: '多肽修護霜', desc: '鎖水修護，全天候保護肌膚' },
+      { name: '維他命C基礎保養3入組', desc: '亮白保濕一次搞定，入門首選' }
+    ],
+    tips: ['保養重在堅持，每日早晚固定使用效果最佳', '化妝水建議輕拍而非摩擦', '敏感肌建議先在耳後測試再全臉使用']
+  },
+  whitening: {
+    emoji: '✨',
+    badge: '維他命C亮白系列',
+    title: '你適合 — 亮白淡斑專攻系列',
+    desc: '你的首要需求是改善暗沉和色斑！「維他命C系列」結合高效美白成分，搭配特別護理的深層保養，讓膚色均勻透亮，找回自然好氣色。',
+    products: [
+      { name: '維他命C 3種組合', desc: '化妝水+精華+乳液，完整亮白程序' },
+      { name: '特別護理舒緩凝膠', desc: '穩定膚況後再美白，效果加倍' },
+      { name: '鑽石面膜密集護理', desc: '週末密集亮白，快速提亮膚色' }
+    ],
+    tips: ['維他命C系列建議晚上使用，白天做好防曬', '可搭配面膜每週一次密集護理', '暗沉改善需持續使用 6–8 週']
+  },
+  mask: {
+    emoji: '🎭',
+    badge: '面膜特攻系列',
+    title: '你適合 — 面膜密集護理系列',
+    desc: '你熱愛面膜儀式！潤妮秀「面膜系列（Mask Line）」包含多款功能面膜，搭配日常基礎保養，每週給肌膚 SPA 級的密集修護體驗。',
+    products: [
+      { name: '奇蹟鑽石去角質', desc: '深層清潔，煥亮膚色，面膜前必用' },
+      { name: '防護噴霧', desc: '保濕鎖水，面膜後隨時補給' },
+      { name: '多肽化妝水', desc: '搭配面膜使用，效果加倍' }
+    ],
+    tips: ['面膜建議每週使用 2–3 次，不宜天天使用', '使用前先做好基礎清潔，效果更好', '面膜後不需再洗臉，輕拍吸收即可']
+  },
+  repair: {
+    emoji: '🛡️',
+    badge: '特別修護系列',
+    title: '你適合 — 特別護理修護系列',
+    desc: '敏感肌需要溫柔對待！「特別護理系列（Special Care）」專為肌膚屏障受損設計，幫助修復並恢復健康穩定狀態，同時提供充足滋潤。',
+    products: [
+      { name: '舒緩修護凝膠', desc: '即時舒緩泛紅不適，第一步必備' },
+      { name: '基礎護理化妝水', desc: '溫和補水，穩定肌膚基底' },
+      { name: '胜肽精華霜', desc: '強化屏障，提升防護力' }
+    ],
+    tips: ['選擇無酒精、無香料的成分，降低刺激', '更換新產品前先少量測試，觀察反應', '避免過度清潔，每天洗臉不超過兩次']
+  }
+};
+
+// ── 狀態 ──────────────────────────────────────────
+const answers = {};
+const answerKeys = ['skin', 'concern', 'age', 'habit', 'ingredient'];
+let currentStep = 0;
+const totalSteps = 5;
+
+// ── 邏輯 ──────────────────────────────────────────
+function getResultKey() {
+  const { concern, ingredient, habit, age, skin } = answers;
+  if (concern === 'aging' || age === '50plus' || ingredient === 'biotech') return 'premium';
+  if (concern === 'whitening' || ingredient === 'vitaminc') return 'whitening';
+  if (concern === 'repair' || skin === 'sensitive') return 'repair';
+  if (habit === 'mask') return 'mask';
+  return 'basic';
+}
+
+function updateProgress(step) {
+  const pct = Math.round((step / totalSteps) * 100);
+  document.getElementById('progress').style.width = pct + '%';
+  document.getElementById('step-label').textContent = `問題 ${step + 1} / ${totalSteps}`;
+  document.getElementById('step-pct').textContent = pct + '%';
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+  currentStep = n;
+  updateProgress(n);
+  const sel = document.querySelector(`.step[data-step="${n}"] .option-btn.selected`);
+  const nxt = document.getElementById(`next-${n}`);
+  if (nxt) nxt.classList.toggle('ready', !!sel);
+  window.scrollTo(0, 0);
+}
+
+function showResult() {
+  document.getElementById('quiz-area').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+  const ra = document.getElementById('result-area');
+  ra.classList.add('active');
+
+  const key = getResultKey();
+  const r = RESULTS[key];
+
+  document.getElementById('r-emoji').textContent = r.emoji;
+  document.getElementById('r-badge').textContent = r.badge;
+  document.getElementById('r-title').textContent = r.title;
+  document.getElementById('r-desc').textContent = r.desc;
+
+  document.getElementById('r-products').innerHTML = r.products.map((p, i) =>
+    `<div class="product-card">
+      <div class="product-num">${i + 1}</div>
+      <div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+      </div>
+    </div>`
+  ).join('');
+
+  document.getElementById('r-tips').innerHTML = r.tips.map(t =>
+    `<li>${t}</li>`
+  ).join('');
+
+  document.getElementById('progress').style.width = '100%';
+  window.scrollTo(0, 0);
+}
+
+// ── 事件 ──────────────────────────────────────────
+document.getElementById('start-btn').addEventListener('click', () => {
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'block';
+  document.getElementById('progress-wrap').style.display = 'block';
+  goToStep(0);
+});
+
+document.querySelectorAll('.option-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const step = btn.closest('.step');
+    step.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const si = parseInt(step.dataset.step);
+    answers[answerKeys[si]] = btn.dataset.val;
+    const nxt = document.getElementById(`next-${si}`);
+    if (nxt) nxt.classList.add('ready');
+  });
+});
+
+for (let i = 0; i < totalSteps; i++) {
+  const btn = document.getElementById(`next-${i}`);
+  if (!btn) continue;
+  btn.addEventListener('click', () => {
+    if (!btn.classList.contains('ready')) return;
+    if (i < totalSteps - 1) goToStep(i + 1);
+    else showResult();
+  });
+}
+
+document.querySelectorAll('.btn-back').forEach(btn => {
+  btn.addEventListener('click', () => goToStep(parseInt(btn.dataset.to)));
+});
+
+document.getElementById('restart-btn').addEventListener('click', () => {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('result-area').classList.remove('active');
+  document.getElementById('intro-screen').style.display = 'block';
+  document.getElementById('quiz-area').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('progress').style.width = '0%';
+  window.scrollTo(0, 0);
+});
+
+// ── LINE 分享 ──────────────────────────────────────
+document.getElementById('share-line-btn').addEventListener('click', async () => {
+  const key = getResultKey();
+  const r = RESULTS[key];
+  const msg = `【CHARIS TAIWAN 肌膚診斷結果】\n${r.emoji} ${r.title}\n\n推薦產品：${r.products.map(p => p.name).join('、')}\n\n立即去試試：https://charis-global.tw/`;
+
+  if (window.liff && liff.isInClient()) {
+    try {
+      await liff.shareTargetPicker([{ type: 'text', text: msg }]);
+    } catch (e) { alert('分享失敗，請稍後再試'); }
+  } else {
+    const url = `https://line.me/R/msg/text/?${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  }
+});
+
+// ── LIFF 初始化 ────────────────────────────────────
+// ⚠️ 請將下方的 YOUR_LIFF_ID 替換為你的實際 LIFF ID
+const LIFF_ID = 'YOUR_LIFF_ID';
+
+if (LIFF_ID !== 'YOUR_LIFF_ID') {
+  liff.init({ liffId: LIFF_ID })
+    .then(() => { console.log('LIFF 初始化成功'); })
+    .catch(err => { console.warn('LIFF 初始化失敗（非 LINE 環境也正常）:', err); });
+}
+</script>
+</body>
+</html>
