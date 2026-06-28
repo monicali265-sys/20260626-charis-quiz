@@ -706,24 +706,17 @@ document.getElementById('restart-btn').addEventListener('click', () => {
 });
 
 // ── LINE 分享 ──────────────────────────────────────
-document.getElementById('share-line-btn').addEventListener('click', async () => {
+document.getElementById('share-line-btn').addEventListener('click', () => {
   const key = getResultKey();
   const r = RESULTS[key];
   const msg = `【CHARIS TAIWAN 肌膚診斷結果】\n${r.emoji} ${r.title}\n\n推薦產品：${r.products.map(p => p.name).join('、')}\n\n立即去試試：https://charis-global.tw/`;
-
-  if (window.liff && liff.isInClient()) {
-    try {
-      await liff.shareTargetPicker([{ type: 'text', text: msg }]);
-    } catch (e) { alert('分享失敗，請稍後再試'); }
-  } else {
-    const url = `https://line.me/R/msg/text/?${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
-  }
+  const url = `https://line.me/R/msg/text/?${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
 });
 
 // ── LIFF 初始化 ────────────────────────────────────
 // ⚠️ 請將下方的 YOUR_LIFF_ID 替換為你的實際 LIFF ID
-const LIFF_ID = '2010521652-DGBegcwV';
+const LIFF_ID = 'YOUR_LIFF_ID';
 
 if (LIFF_ID !== 'YOUR_LIFF_ID') {
   liff.init({ liffId: LIFF_ID })
